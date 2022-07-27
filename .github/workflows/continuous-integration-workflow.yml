@@ -1,5 +1,8 @@
 name: Continuous Integration
-on: [push]
+on: 
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -25,3 +28,27 @@ jobs:
     - name: Typescript test
       run: npm run test
       working-directory: ./DotnetTemplate.Web
+
+  
+  docker:
+    needs: build
+    name: Docker build and publish to Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build docker image
+      run: docker build dotnetapp .
+
+  deploy:
+    needs: build
+    name: Deploy to Heroku
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12 
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: "module8-node" 
+          heroku_email: "philw10@yahoo.co.uk"  
+          usedocker: true 
